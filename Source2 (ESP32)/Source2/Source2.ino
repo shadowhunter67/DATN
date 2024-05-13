@@ -7,7 +7,7 @@
 #include <Adafruit_SSD1306.h>
 // nap ko dc thi chinh uploadspeed xuong
 // Chon NodeMCU 1.0
-// Chon LEDBUILTIN 16
+// Chon LEDBUILTIN 16/2
 // OLED (SDA) -> ESP8266 (D2-SDA)
 // OLED (SDK) -> ESP8266 (D1-SCL)
 
@@ -49,9 +49,10 @@ static const unsigned char PROGMEM logo_bmp[] =
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
-#define GAS A0
-#define PIR D5
-#define BUZZER D6
+//#define GAS A0
+//#define BUZZER D5
+#define light D6
+#define fan D7
 #define B1 D0
 #define B2 D3
 //#define light D5
@@ -59,13 +60,15 @@ DHT dht(DHTPIN, DHTTYPE);
 
 String temperature;
 String humidity;
-String pir;
-String gas;
+//String pir;
+//String gas;
 int button1 = 0;
 int button2 = 0;
 int a = 1;
 int b = 1;
-
+int c = 0; // c=0: chế độ thủ công, c=1: chế độ tự động
+float d = 33;
+int dem = 0;
 // Thông tin của WIFI và Node-red
 const char* ssid = "1505"; ///  wifi ssid
 const char* password = "0918273645";
@@ -79,10 +82,13 @@ bool useMQTT = true;
 //#define pub "PIR/pub"
 #define sub1 "Light"
 #define sub2 "Fan"
-#define sub3 "PIR"
-#define sub4 "Buzzer"
+//#define sub3 "PIR"
+//#define sub4 "Buzzer"
+#define sub5 "Mode"
+#define sub6 "Value"
 #define pub1 "Light/pub"
 #define pub2 "Fan/pub"
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;//----------------
@@ -128,10 +134,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      //      digitalWrite(light, HIGH);
+      digitalWrite(light, HIGH);
       button1 = 1;
     } else {
-      //      digitalWrite(light, LOW);
+      digitalWrite(light, LOW);
       button1 = 0;
     }
   }
@@ -144,14 +150,42 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      //      digitalWrite(fan, HIGH);
+      digitalWrite(fan, HIGH);
       button2 = 1;
     } else {
-      //      digitalWrite(fan, LOW);
+      digitalWrite(fan, LOW);
       button2 = 0;
     }
   }
-  if (strstr(topic, sub3))
+  //  if (strstr(topic, sub3))
+  //  {
+  //    for (int i = 0; i < length; i++)
+  //    {
+  //      Serial.print((char)payload[i]);
+  //    }
+  //    Serial.println();
+  //    if ((char)payload[0] == '1')
+  //    {
+  //      a = 1; delay(4000);
+  //    } else {
+  //      a = 0; pir = "0";
+  //    }
+  //  }
+//  if (strstr(topic, sub4))
+//  {
+//    for (int i = 0; i < length; i++)
+//    {
+//      Serial.print((char)payload[i]);
+//    }
+//    Serial.println();
+//    if ((char)payload[0] == '1')
+//    {
+//      b = 0;
+//    } else {
+//      b = 1;
+//    }
+//  }
+  if (strstr(topic, sub5))
   {
     for (int i = 0; i < length; i++)
     {
@@ -160,24 +194,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      a = 1; delay(4000);
+      c = 1;
     } else {
-      a = 0; pir = "0";
+      c = 0;
     }
   }
-  if (strstr(topic, sub4))
+  if (strstr(topic, sub6))
   {
     for (int i = 0; i < length; i++)
     {
       Serial.print((char)payload[i]);
     }
     Serial.println();
-    if ((char)payload[0] == '1')
-    {
-      b = 0;
-    } else {
-      b = 1;
-    }
+    d = ((int)payload[0] - 48) * 10 + ((int)payload[1] - 48);
   }
 }
 
@@ -191,8 +220,10 @@ void reconnect() {
       Serial.println("Connected");
       client.subscribe(sub1);
       client.subscribe(sub2);
-      client.subscribe(sub3);
-      client.subscribe(sub4);
+      //      client.subscribe(sub3);
+//      client.subscribe(sub4);
+      client.subscribe(sub5);
+      client.subscribe(sub6);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -208,13 +239,12 @@ void setup() {
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  pinMode(PIR, INPUT);
-  pinMode(GAS, INPUT);
-  pinMode(BUZZER, OUTPUT);
-  pinMode(B1, INPUT_PULLUP);
+//  pinMode(GAS, INPUT);
+//  pinMode(BUZZER, OUTPUT);
+  pinMode(B1, INPUT);
   pinMode(B2, INPUT);
-  //  pinMode(light, OUTPUT);
-  //  pinMode(fan, OUTPUT);
+  pinMode(light, OUTPUT);
+  pinMode(fan, OUTPUT);
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -224,7 +254,7 @@ void setup() {
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
   display.display();
-  delay(1000); // Pause for 1 seconds
+  delay(100); // Pause for 1 seconds
 
   // Clear the buffer
   display.clearDisplay();
@@ -234,7 +264,6 @@ void setup() {
 
   display.display();
   delay(1000);
-
   dht.begin();
 }
 
@@ -245,49 +274,85 @@ void loop() {
   }
   client.loop();
   display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextSize(2);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
   display.setCursor(0, 0);            // Start at top-left corner
-  display.println(F("Living Room"));
+  display.print(F("  BedRoom"));
 
-  temperature = String(dht.readTemperature()-2);
-  client.publish("Temperature", temperature.c_str()); // publish temp topic /ThinkIOT/temp
   display.setTextSize(1);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 8);            // Start at top-left corner
-  display.print(F("T: "));
-  display.print(dht.readTemperature()-2);
+  display.setCursor(0, 56);            // Start at top-left corner
+  display.print(F("Setup value: "));
+  display.print(d);
   display.println(F("*C"));
+  
+  nhietdo();
+  doam();
+  den();
+  quat();
+  Serial.print("  Mode: ");
+  if (c == 0) {
+    Serial.print("Manual");
+  }
+  if (c == 1) {
+    Serial.print("Automatic");
+  }
+  Serial.print("  Value: ");
+  Serial.println(d);
 
-  humidity = String(dht.readHumidity());
-  client.publish("Humidity", humidity.c_str());   // publish hum topic /ThinkIOT/hum
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 8);            // Start at top-left corner
-  display.print(F("H: "));
-  display.print(dht.readHumidity());
-  display.println(F("%"));
+  Serial.println(" ");
+  delay(100);
+  display.display();
+  delay(800);
+}
 
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.print("  Humidity: ");
-  Serial.println(humidity);
+void nhietdo() {
+  temperature = String(dht.readTemperature() - 1);
+  client.publish("Temperature", temperature.c_str()); // publish temp topic /ThinkIOT/temp
 
   display.setTextSize(1);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
   display.setCursor(0, 16);            // Start at top-left corner
-  display.print(F("Light: "));
+  display.print(F("Temperature: "));
+  display.print(dht.readTemperature() - 1);
+  display.println(F("*C"));
+
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+}
+
+void doam() {
+  humidity = String(dht.readHumidity());
+  client.publish("Humidity", humidity.c_str());   // publish hum topic /ThinkIOT/hum
+
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 25);            // Start at top-left corner
+  display.print(F("Humidity   : "));
+  display.print(dht.readHumidity());
+  display.println(F(" %"));
+
+  Serial.print("  Humidity: ");
+  Serial.println(humidity);
+}
+
+void den() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 35);            // Start at top-left corner
+  display.print(F("Light      : "));
+
   if (digitalRead(B1) == 0) {
-    button1++;delay(500);
+    button1++; 
     if (button1 > 1) {
       button1 = 0;
     }
     if (button1 == LOW) {
-      //        digitalWrite(light, LOW);
+      digitalWrite(light, LOW);
       client.publish(pub1, "0");
     }
     if (button1 == HIGH)  {
-      //        digitalWrite(light, HIGH);
+      digitalWrite(light, HIGH);
       client.publish(pub1, "1");
     }
   }
@@ -299,28 +364,53 @@ void loop() {
   }
   Serial.print("Light: ");
   Serial.print(button1);
+}
 
+void quat() {
   display.setTextSize(1);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 16);            // Start at top-left corner
-  display.print(F("Fan: "));
-  if (digitalRead(B2) == 0) {
-    button2++;delay(500);
-    if (button2 > 1) {
-      button2 = 0;
-    }
-    if (button2 == LOW) {
-      //        digitalWrite(fan, LOW);
-      client.publish(pub2, "0");
-    }
-    if (button2 == HIGH)  {
-      //        digitalWrite(fan, HIGH);
-      client.publish(pub2, "1");
+  display.setCursor(0, 45);            // Start at top-left corner
+  display.print(F("Fan        : "));
+
+  // Chê độ thủ công
+  if (c == 0) {
+    if (digitalRead(B2) == 0) {
+      button2++; 
+      if (button2 > 1) {
+        button2 = 0;
+      }
+      if (button2 == LOW) {
+        digitalWrite(fan, LOW);
+        client.publish(pub2, "0");
+      }
+      if (button2 == HIGH)  {
+        digitalWrite(fan, HIGH);
+        client.publish(pub2, "1");
+      }
     }
   }
-  
-  if(temperature>"35.0"){client.publish(pub2, "1");button2 == HIGH;}
-  
+  // Chế độ tự động
+  if (c == 1) {
+    if (dem == 0) {
+      if (dht.readTemperature() - 1 > d) {
+        client.publish(pub2, "1");
+        button2 == HIGH;
+        dem++;
+      }
+      if (dht.readTemperature() - 1 <= d) {
+        client.publish(pub2, "0");
+        button2 == LOW;
+        dem++;
+      }
+    }
+    else {
+      dem++;
+      if (dem > 10) {
+        dem = 0;
+      }
+    }
+  }
+
   if (button2 == LOW) {
     display.print(F("OFF"));
   }
@@ -329,80 +419,5 @@ void loop() {
   }
 
   Serial.print("  Fan: ");
-  Serial.println(button2);
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 24);            // Start at top-left corner
-  display.println(F("Kitchen Room"));
-
-  gas = String(analogRead(GAS));
-  client.publish("Gas", gas.c_str());
-  if (b == 1) {
-    if (analogRead(GAS) > 100) {
-      digitalWrite(BUZZER, HIGH);
-      delay(2000);
-      digitalWrite(BUZZER, LOW);
-    }
-    else {
-      digitalWrite(BUZZER, LOW);
-    }
-  }
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 32);            // Start at top-left corner
-  display.print(F("Gas: "));
-  display.print(analogRead(GAS));
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 32);            // Start at top-left corner
-  display.print(F("Buz: "));
-  if (b == LOW) {
-    display.print(F("OFF"));
-  }
-  if (b == HIGH) {
-    display.print(F("ON"));
-  }
-
-  Serial.print("GAS: ");
-  Serial.print(gas);
-  Serial.print("  buzzer: ");
-  Serial.println(b);
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 40);            // Start at top-left corner
-  display.println(F("Bath Room"));
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 48);            // Start at top-left corner
-  display.print(F("Pir: "));
-  display.print(digitalRead(PIR));
-
-  if (a == 1) {
-    pir = String(digitalRead(PIR));
-    client.publish("Pir", pir.c_str());
-  }
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 48);            // Start at top-left corner
-  display.print(F("PIR: "));
-  if (a == LOW) {
-    display.print(F("OFF"));
-  }
-  if (a == HIGH) {
-    display.print(F("ON"));
-  }
-
-  Serial.print("Pir: ");
-  Serial.print(digitalRead(PIR));
-  Serial.print("  PIR: ");
-  Serial.println(a);
-
-  Serial.println(" ");
-  display.display();
-  
+  Serial.print(button2);
 }

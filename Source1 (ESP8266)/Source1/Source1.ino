@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <math.h>
 // an giu nut boost khi nap code
 // Chon ESP 32 Dev Module
 // OLED (SCK) -> ESP32 (22-SDA)
@@ -44,24 +45,46 @@ static const unsigned char PROGMEM logo_bmp[] =
 
 // Định nghĩa cho các chân và gán kiểu dữ liệu cho từng biến
 #include "DHT.h"
-#define DHTPIN 32
+#define DHTPIN 5
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
-
-#define B1 15
-#define B2 2
-#define light 25
-#define fan 26
-#define light1 14
-#define fan1 27
-#define light2 35
-#define fan2 34
+//Thay đổi: 2 đèn, 2 quạt, 2 nút nhấn, dht11, PIR, cảm biến ánh sáng, MQ2, còi
+#define B1 4
+#define B2 15
+#define B3 19
+#define B4 23
+#define light 18
+#define light1 13
+#define fan1 12
+#define light2 14
+#define fan2 27
+#define PIR 33
+#define GAS 34
+#define BUZZER 32
 String temperature;
 String humidity;
-float temp = 0;
-float hum = 0;
+String pir;
+String gas;
+String Lightsensor;
+int button = 0;
 int button1 = 0;
 int button2 = 0;
+int a = 1;
+int b = 1;
+int c = 0; // c=0: chế độ thủ công, c=1: chế độ tự động
+float d = 33;
+int dem = 0;
+int dem1 = 0;
+int dem2 = 0;
+int dem3 = 0;
+int Light;
+int Fan;
+int value;
+int value1;
+int delay5 = 1;
+int delay6 = 1;
+int delay7 = 1;
+int delay8 = 1;
 
 // Thông tin của WIFI và Node-red
 const char* ssid = "1505"; ///  wifi ssid
@@ -76,10 +99,19 @@ bool useMQTT = true;
 #define sub2 "Faan1"
 #define sub3 "Light"
 #define sub4 "Fan"
-#define sub5 "Liiight2"
-#define sub6 "Faaan2"
+//#define sub5 "Liiight2"
+//#define sub6 "Faaan2"
+#define sub7 "Mode"
+#define sub8 "Vaalue1"
+#define sub9  "delay5"
+#define sub10 "deelay6"
+#define sub11 "delaay7"
+#define sub12 "deelaay8"
+#define sub13 "PIR"
+#define sub14 "Buzzer"
 #define pub1 "Liight1/pub"
 #define pub2 "Faan1/pub"
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;//----------------
@@ -153,9 +185,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      digitalWrite(light, HIGH);
+      Light = 1;
     } else {
-      digitalWrite(light, LOW);
+      Light = 0;
     }
   }
   if (strstr(topic, sub4))
@@ -167,12 +199,40 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      digitalWrite(fan, HIGH);
+      Fan = 1;
     } else {
-      digitalWrite(fan, LOW);
+      Fan = 0;
     }
   }
-  if (strstr(topic, sub5))
+  //  if (strstr(topic, sub5))
+  //  {
+  //    for (int i = 0; i < length; i++)
+  //    {
+  //      Serial.print((char)payload[i]);
+  //    }
+  //    Serial.println();
+  //    if ((char)payload[0] == '1')
+  //    {
+  //      digitalWrite(light2, HIGH);
+  //    } else {
+  //      digitalWrite(light2, LOW);
+  //    }
+  //  }
+  //  if (strstr(topic, sub6))
+  //  {
+  //    for (int i = 0; i < length; i++)
+  //    {
+  //      Serial.print((char)payload[i]);
+  //    }
+  //    Serial.println();
+  //    if ((char)payload[0] == '1')
+  //    {
+  //      digitalWrite(fan2, HIGH);
+  //    } else {
+  //      digitalWrite(fan2, LOW);
+  //    }
+  //  }
+  if (strstr(topic, sub7))
   {
     for (int i = 0; i < length; i++)
     {
@@ -181,12 +241,139 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      digitalWrite(light2, HIGH);
+      c = 1;
     } else {
-      digitalWrite(light2, LOW);
+      c = 0;
     }
   }
-  if (strstr(topic, sub6))
+  if (strstr(topic, sub8))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    d = ((int)payload[0] - 48) * 10 + ((int)payload[1] - 48);
+  }
+
+  if (strstr(topic, sub9))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    if (length == 7) {
+      delay5 = ((int)payload[0] - 48) * 1000000 + ((int)payload[1] - 48) * 100000 + ((int)payload[2] - 48) * 10000 + ((int)payload[3] - 48) * 1000 + ((int)payload[4] - 48) * 100 + ((int)payload[5] - 48) * 10 + ((int)payload[6] - 48) * 1;
+    }
+    if (length == 6) {
+      delay5 = ((int)payload[0] - 48) * 100000 + ((int)payload[1] - 48) * 10000 + ((int)payload[2] - 48) * 1000 + ((int)payload[3] - 48) * 100 + ((int)payload[4] - 48) * 10 + ((int)payload[5] - 48) * 1;
+    }
+    if (length == 5) {
+      delay5 = ((int)payload[0] - 48) * 10000  + ((int)payload[1] - 48) * 1000  + ((int)payload[2] - 48) * 100  + ((int)payload[3] - 48) * 10  + ((int)payload[4] - 48) * 1;
+    }
+    if (length == 4) {
+      delay5 = ((int)payload[0] - 48) * 1000   + ((int)payload[1] - 48) * 100   + ((int)payload[2] - 48) * 10   + ((int)payload[3] - 48) * 1;
+    }
+    if (length == 3) {
+      delay5 = ((int)payload[0] - 48) * 100    + ((int)payload[1] - 48) * 10    + ((int)payload[2] - 48) * 1;
+    }
+    if (length == 2) {
+      delay5 = ((int)payload[0] - 48) * 10     + ((int)payload[1] - 48) * 1;
+    }
+    if (length == 1) {
+      delay5 = ((int)payload[0] - 48) * 1;
+    }
+  }
+  if (strstr(topic, sub10))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    if (length == 7) {
+      delay6 = ((int)payload[0] - 48) * 1000000 + ((int)payload[1] - 48) * 100000 + ((int)payload[2] - 48) * 10000 + ((int)payload[3] - 48) * 1000 + ((int)payload[4] - 48) * 100 + ((int)payload[5] - 48) * 10 + ((int)payload[6] - 48) * 1;
+    }
+    if (length == 6) {
+      delay6 = ((int)payload[0] - 48) * 100000 + ((int)payload[1] - 48) * 10000 + ((int)payload[2] - 48) * 1000 + ((int)payload[3] - 48) * 100 + ((int)payload[4] - 48) * 10 + ((int)payload[5] - 48) * 1;
+    }
+    if (length == 5) {
+      delay6 = ((int)payload[0] - 48) * 10000  + ((int)payload[1] - 48) * 1000  + ((int)payload[2] - 48) * 100  + ((int)payload[3] - 48) * 10  + ((int)payload[4] - 48) * 1;
+    }
+    if (length == 4) {
+      delay6 = ((int)payload[0] - 48) * 1000   + ((int)payload[1] - 48) * 100   + ((int)payload[2] - 48) * 10   + ((int)payload[3] - 48) * 1;
+    }
+    if (length == 3) {
+      delay6 = ((int)payload[0] - 48) * 100    + ((int)payload[1] - 48) * 10    + ((int)payload[2] - 48) * 1;
+    }
+    if (length == 2) {
+      delay6 = ((int)payload[0] - 48) * 10     + ((int)payload[1] - 48) * 1;
+    }
+    if (length == 1) {
+      delay6 = ((int)payload[0] - 48) * 1;
+    }
+  }
+  if (strstr(topic, sub11))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    if (length == 7) {
+      delay7 = ((int)payload[0] - 48) * 1000000 + ((int)payload[1] - 48) * 100000 + ((int)payload[2] - 48) * 10000 + ((int)payload[3] - 48) * 1000 + ((int)payload[4] - 48) * 100 + ((int)payload[5] - 48) * 10 + ((int)payload[6] - 48) * 1;
+    }
+    if (length == 6) {
+      delay7 = ((int)payload[0] - 48) * 100000 + ((int)payload[1] - 48) * 10000 + ((int)payload[2] - 48) * 1000 + ((int)payload[3] - 48) * 100 + ((int)payload[4] - 48) * 10 + ((int)payload[5] - 48) * 1;
+    }
+    if (length == 5) {
+      delay7 = ((int)payload[0] - 48) * 10000  + ((int)payload[1] - 48) * 1000  + ((int)payload[2] - 48) * 100  + ((int)payload[3] - 48) * 10  + ((int)payload[4] - 48) * 1;
+    }
+    if (length == 4) {
+      delay7 = ((int)payload[0] - 48) * 1000   + ((int)payload[1] - 48) * 100   + ((int)payload[2] - 48) * 10   + ((int)payload[3] - 48) * 1;
+    }
+    if (length == 3) {
+      delay7 = ((int)payload[0] - 48) * 100    + ((int)payload[1] - 48) * 10    + ((int)payload[2] - 48) * 1;
+    }
+    if (length == 2) {
+      delay7 = ((int)payload[0] - 48) * 10     + ((int)payload[1] - 48) * 1;
+    }
+    if (length == 1) {
+      delay7 = ((int)payload[0] - 48) * 1;
+    }
+  }
+  if (strstr(topic, sub12))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    if (length == 7) {
+      delay8 = ((int)payload[0] - 48) * 1000000 + ((int)payload[1] - 48) * 100000 + ((int)payload[2] - 48) * 10000 + ((int)payload[3] - 48) * 1000 + ((int)payload[4] - 48) * 100 + ((int)payload[5] - 48) * 10 + ((int)payload[6] - 48) * 1;
+    }
+    if (length == 6) {
+      delay8 = ((int)payload[0] - 48) * 100000 + ((int)payload[1] - 48) * 10000 + ((int)payload[2] - 48) * 1000 + ((int)payload[3] - 48) * 100 + ((int)payload[4] - 48) * 10 + ((int)payload[5] - 48) * 1;
+    }
+    if (length == 5) {
+      delay8 = ((int)payload[0] - 48) * 10000  + ((int)payload[1] - 48) * 1000  + ((int)payload[2] - 48) * 100  + ((int)payload[3] - 48) * 10  + ((int)payload[4] - 48) * 1;
+    }
+    if (length == 4) {
+      delay8 = ((int)payload[0] - 48) * 1000   + ((int)payload[1] - 48) * 100   + ((int)payload[2] - 48) * 10   + ((int)payload[3] - 48) * 1;
+    }
+    if (length == 3) {
+      delay8 = ((int)payload[0] - 48) * 100    + ((int)payload[1] - 48) * 10    + ((int)payload[2] - 48) * 1;
+    }
+    if (length == 2) {
+      delay8 = ((int)payload[0] - 48) * 10     + ((int)payload[1] - 48) * 1;
+    }
+    if (length == 1) {
+      delay8 = ((int)payload[0] - 48) * 1;
+    }
+  }
+
+  if (strstr(topic, sub13))
   {
     for (int i = 0; i < length; i++)
     {
@@ -195,9 +382,24 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
     if ((char)payload[0] == '1')
     {
-      digitalWrite(fan2, HIGH);
+      a = 1; delay(2000);
     } else {
-      digitalWrite(fan2, LOW);
+      a = 0; pir = "0";
+    }
+  }
+
+  if (strstr(topic, sub14))
+  {
+    for (int i = 0; i < length; i++)
+    {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    if ((char)payload[0] == '1')
+    {
+      b = 0;
+    } else {
+      b = 1;
     }
   }
 }
@@ -214,8 +416,16 @@ void reconnect() {
       client.subscribe(sub2);
       client.subscribe(sub3);
       client.subscribe(sub4);
-      client.subscribe(sub5);
-      client.subscribe(sub6);
+      //      client.subscribe(sub5);
+      //      client.subscribe(sub6);
+      client.subscribe(sub7);
+      client.subscribe(sub8);
+      client.subscribe(sub9);
+      client.subscribe(sub10);
+      client.subscribe(sub11);
+      client.subscribe(sub12);
+      client.subscribe(sub13);
+      client.subscribe(sub14);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -233,10 +443,17 @@ void setup() {
   client.setCallback(callback);
   pinMode(B1, INPUT_PULLUP);
   pinMode(B2, INPUT_PULLUP);
-  pinMode(light, OUTPUT);
-  pinMode(fan, OUTPUT);
+  pinMode(B3, INPUT_PULLUP);
+  pinMode(B4, INPUT_PULLUP);
+  pinMode(light, INPUT);
+  //  pinMode(fan, OUTPUT);
   pinMode(light1, OUTPUT);
   pinMode(fan1, OUTPUT);
+  pinMode(light2, OUTPUT);
+  pinMode(fan2, OUTPUT);
+  pinMode(PIR, INPUT);
+  pinMode(GAS, INPUT);
+  pinMode(BUZZER, OUTPUT);
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for (;;); // Don't proceed, loop forever
@@ -255,7 +472,6 @@ void setup() {
 
   display.display();
   delay(1000);
-
   dht.begin();
 }
 
@@ -265,41 +481,131 @@ void loop() {
     reconnect();
   }
   client.loop();
-  display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 0);            // Start at top-left corner
-  display.println(F("Bed Room"));
 
-  temperature = String(dht.readTemperature()-1);
-  client.publish("Temperature1", temperature.c_str()); // publish temp topic /ThinkIOT/temp
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0, 8);            // Start at top-left corner
-  display.print(F("T: "));
-  display.print(dht.readTemperature()-1);
-  display.println(F("*C"));
+  nuttrai();
+  nutphai();
 
-  humidity = String(dht.readHumidity());
-  client.publish("Humidity1", humidity.c_str());   // publish hum topic /ThinkIOT/hum
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 8);            // Start at top-left corner
-  display.print(F("H: "));
-  display.print(dht.readHumidity());
-  display.println(F("%"));
+  nhietdo();
+  doam();
+  den();
+  quat();
 
+  // Menu1
+  if (button == 0) {
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0, 0);            // Start at top-left corner
+    display.println(F("LivingRoom"));
+
+    innhietdo();
+    indoam();
+    inden();
+    inquat();
+
+    display.setTextSize(1);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0, 56);            // Start at top-left corner
+    display.print(F("Setup value: "));
+    display.print(d);
+    display.println(F("*C"));
+  }
   Serial.print("Temperature1: ");
-  Serial.println(temperature);
-  Serial.print("Humidity1: ");
+  Serial.print(temperature);
+
+  Serial.print("  Humidity1: ");
   Serial.println(humidity);
 
+  Serial.print("Light: ");
+  Serial.print(button1);
+
+  Serial.print("  Fan: ");
+  Serial.print(button2);
+
+  Serial.print("  Mode: ");
+  if (c == 0) {
+    Serial.print("Manual");
+  }
+  if (c == 1) {
+    Serial.print("Automatic");
+  }
+  Serial.print("  Value: ");
+  Serial.println(d);
+
+  PIRsensor();
+  // Menu2
+  if (button == 1) {
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0, 0);            // Start at top-left corner
+    display.println(F(" Bath Room"));
+    inPIRsensor();
+  }
+
+  Serial.print("PIR value: ");
+  Serial.print(digitalRead(PIR));
+  Serial.print("  PIR status: ");
+  Serial.println(a);
+
+  GASsensor();
+  // Menu3
+  if (button == 2) {
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0, 0);            // Start at top-left corner
+    display.println(F("  K.Room"));
+    inGASsensor();
+  }
+
+  Serial.print("GAS: ");
+  Serial.print(gas);
+  Serial.print("  buzzer: ");
+  Serial.println(b);
+
+// Làm không kịp để phản biện
+//  cambienanhsang();
+//  Serial.print("Lightsensor: ");
+//  Serial.println(analogRead(light));
+  
+  Serial.println(" ");
+  delay(100);
+  display.display();
+  delay(800);
+}
+
+void nhietdo() {
+  temperature = String(dht.readTemperature() - 1);
+  client.publish("Temperature1", temperature.c_str()); // publish temp topic
+}
+
+void innhietdo() {
   display.setTextSize(1);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
   display.setCursor(0, 16);            // Start at top-left corner
-  display.print(F("Light: "));
+  display.print(F("Temperature: "));
+  display.print(dht.readTemperature() - 1);
+  display.println(F("*C"));
+}
+
+void doam() {
+  humidity = String(dht.readHumidity());
+  client.publish("Humidity1", humidity.c_str());   // publish hum topic
+}
+
+void indoam() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 25);            // Start at top-left corner
+  display.print(F("Humidity   : "));
+  display.print(dht.readHumidity());
+  display.println(F(" %"));
+}
+
+void den() {
   if (digitalRead(B1) == 0) {
-    button1++;delay(500);
+    button1++;
     if (button1 > 1) {
       button1 = 0;
     }
@@ -312,44 +618,194 @@ void loop() {
       client.publish(pub1, "1");
     }
   }
+}
+
+void inden() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 35);            // Start at top-left corner
+  display.print(F("Light      : "));
+
   if (button1 == LOW) {
     display.print(F("OFF"));
   }
   if (button1 == HIGH)  {
     display.print(F("ON"));
   }
-
-  Serial.print("button1: ");
-  Serial.println(button1);
-
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(70, 16);            // Start at top-left corner
-  display.print(F("Fan: "));
-  if (digitalRead(B2) == 0) {
-    button2++;delay(500);
-    if (button2 > 1) {
-      button2 = 0;
-    }
-    if (button2 == LOW) {
-      digitalWrite(fan1, LOW);
-      client.publish(pub2, "0");
-    }
-    if (button2 == HIGH)  {
-      digitalWrite(fan1, HIGH);
-      client.publish(pub2, "1");
+}
+void quat() {
+  // Chê độ thủ công
+  if (c == 0) {
+    if (digitalRead(B2) == 0) {
+      button2++;
+      if (button2 > 1) {
+        button2 = 0;
+      }
+      if (button2 == LOW) {
+        digitalWrite(fan1, LOW);
+        client.publish(pub2, "0");
+      }
+      if (button2 == HIGH)  {
+        digitalWrite(fan1, HIGH);
+        client.publish(pub2, "1");
+      }
     }
   }
+
+  // Chế độ tự động
+  if (c == 1) {
+    if (dem == 0) {
+      if (dht.readTemperature() - 1 >= d) {
+        client.publish(pub2, "1");
+        button2 == HIGH;
+        dem++;
+      }
+      if (dht.readTemperature() - 1 < d) {
+        client.publish(pub2, "0");
+        button2 == LOW;
+        dem++;
+      }
+    }
+    else {
+      dem++;
+      if (dem > 3) {
+        dem = 0;
+      }
+    }
+  }
+}
+
+void inquat() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 45);            // Start at top-left corner
+  display.print(F("Fan        : "));
+
   if (button2 == LOW) {
     display.print(F("OFF"));
   }
   if (button2 == HIGH) {
     display.print(F("ON"));
   }
+}
 
-  Serial.print("button2: ");
-  Serial.println(button2);
+void PIRsensor() {
+  if (a == 1) {
+    pir = String(digitalRead(PIR));
+    client.publish("Pir", pir.c_str());
+    if (digitalRead(PIR) == 1)
+    {
+      digitalWrite(fan2, HIGH);
+    } else {
+      digitalWrite(fan2, LOW);
+    }
+  }
+}
+void inPIRsensor() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 16);            // Start at top-left corner
+  display.print(F("PIR status: "));
+  if (a == 0) {
+    display.print(F("OFF"));
+  }
 
-  display.display();
+  if (a == 1) {
+    display.print(F("ON"));
+    if (digitalRead(PIR) == 1) {
+      digitalWrite(fan2, HIGH);
+    }
+    if (digitalRead(PIR) == 0) {
+      digitalWrite(fan2, LOW);
+    }
+  }
 
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 25);            // Start at top-left corner
+  display.print(F("PIR value : "));
+  if (a == 0) {
+    display.print(F("0"));
+  }
+  if (a == 1) {
+    display.print(digitalRead(PIR));
+  }
+
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 35);            // Start at top-left corner
+  display.print(F("Fan       : "));
+  if (digitalRead(fan2) == 1) {
+    display.print(F("ON"));
+  }
+  if (digitalRead(fan2) == 0) {
+    display.print(F("OFF"));
+  }
+}
+
+void nuttrai() {
+  if (digitalRead(B3) == 0) {
+    button--;
+    if (button < 0) {
+      button = 2;
+    }
+  }
+}
+
+void nutphai() {
+  if (digitalRead(B4) == 0) {
+    button++;
+    if (button > 2) {
+      button = 0;
+    }
+  }
+}
+
+void GASsensor() {
+  value = analogRead(GAS);
+  value = map(value, 0, 4095, 0, 100);
+  gas = String(value);
+  client.publish("Gas", gas.c_str());
+  if (b == 1) {
+    if (value >= 30) {
+      digitalWrite(BUZZER, HIGH);
+      delay(2000);
+      digitalWrite(BUZZER, LOW);
+    }
+    else {
+      digitalWrite(BUZZER, LOW);
+    }
+  }
+}
+
+void inGASsensor() {
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 16);            // Start at top-left corner
+  display.print(F("Gas   : "));
+  display.print(value);
+
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0, 25);            // Start at top-left corner
+  display.print(F("Buzzer: "));
+  if (b == LOW) {
+    display.print(F("OFF"));
+  }
+  if (b == HIGH) {
+    display.print(F("ON"));
+  }
+}
+
+void cambienanhsang() {
+  value1 = analogRead(light);
+  value1 = map(value1, 0, 4095, 0, 100);
+  Lightsensor = String(value1);
+  client.publish("Lightsensor", Lightsensor.c_str());
+//  if (value1 == 1) {
+//    digitalWrite(light2, HIGH);
+//  }
+//  else {
+//    digitalWrite(light2, LOW);
+//  }
 }
