@@ -1,0 +1,315 @@
+ (routes 
+  (resolution mm 100000)
+  (parser
+  )
+  (parser
+  )
+  (structure_out
+   (layer TOP (type signal)
+   )
+   (layer I1 (type signal)
+   )
+   (layer I2 (type signal)
+   )
+   (layer I3 (type signal)
+   )
+   (layer I4 (type signal)
+   )
+   (layer I5 (type signal)
+   )
+   (layer I6 (type signal)
+   )
+   (layer I7 (type signal)
+   )
+   (layer I8 (type signal)
+   )
+   (layer I9 (type signal)
+   )
+   (layer I10 (type signal)
+   )
+   (layer I11 (type signal)
+   )
+   (layer I12 (type signal)
+   )
+   (layer I13 (type signal)
+   )
+   (layer I14 (type signal)
+   )
+   (layer BOT (type signal)
+   )
+  )
+  (library_out
+  (padstack $VIA#0_SIGNAL
+   (shape (circ TOP 152400 0 0))
+   (shape (circ I1 152400 0 0))
+   (shape (circ I2 152400 0 0))
+   (shape (circ I3 152400 0 0))
+   (shape (circ I4 152400 0 0))
+   (shape (circ I5 152400 0 0))
+   (shape (circ I6 152400 0 0))
+   (shape (circ I7 152400 0 0))
+   (shape (circ I8 152400 0 0))
+   (shape (circ I9 152400 0 0))
+   (shape (circ I10 152400 0 0))
+   (shape (circ I11 152400 0 0))
+   (shape (circ I12 152400 0 0))
+   (shape (circ I13 152400 0 0))
+   (shape (circ I14 152400 0 0))
+   (shape (circ BOT 152400 0 0))
+  )
+  (padstack $VIA#0_POWER
+   (shape (circ TOP 152400 0 0))
+   (shape (circ I1 152400 0 0))
+   (shape (circ I2 152400 0 0))
+   (shape (circ I3 152400 0 0))
+   (shape (circ I4 152400 0 0))
+   (shape (circ I5 152400 0 0))
+   (shape (circ I6 152400 0 0))
+   (shape (circ I7 152400 0 0))
+   (shape (circ I8 152400 0 0))
+   (shape (circ I9 152400 0 0))
+   (shape (circ I10 152400 0 0))
+   (shape (circ I11 152400 0 0))
+   (shape (circ I12 152400 0 0))
+   (shape (circ I13 152400 0 0))
+   (shape (circ I14 152400 0 0))
+   (shape (circ BOT 152400 0 0))
+  )
+  )
+  (network_out
+   (Net #00002 
+   (rule
+   )
+   (wire (path TOP 76200  4000000 -2020000 -1242000 -2020000 -1242000 -1330000)
+    (connect (terminal pin FAN-2) (terminal pin U1-27))
+   )
+   (wire (path BOT 76200  -1242000 -1330000 -1242000 63500 -734000 63500
+     -734000 500000)
+    (connect (terminal pin U1-27) (terminal pin R1-1))
+   )
+   (wire (path BOT 76200  4000000 -2020000 4000000 -750000)
+    (connect (terminal pin FAN-2) (terminal pin FAN-0))
+   )
+   )
+   (Net #00004 
+   (rule
+   )
+   (wire (path TOP 76200  4000000 480000 4000000 -317500 -734000 -317500
+     -734000 -500000)
+    (connect (terminal pin LIGHT-2) (terminal pin R2-1))
+   )
+   (wire (path BOT 76200  4000000 480000 4000000 1750000)
+    (connect (terminal pin LIGHT-2) (terminal pin LIGHT-0))
+   )
+   (wire (path BOT 76200  -734000 -500000 -734000 -1330000)
+    (connect (terminal pin R2-1) (terminal pin U1-25))
+   )
+   )
+   (Net #00007 
+   (rule
+   )
+   (wire (path BOT 76200  28000 -1330000 28000 -2286000 -4416910 -2286000
+     -4416910 -1750001 -4250000 -1750001 -4250000 -1750000)
+    (connect (terminal pin U1-22) (terminal pin DHT11-1))
+   )
+   )
+   (Net #00009 
+   (rule
+   )
+   (wire (path TOP 76200  508000 -1143000 508000 -1016000 -2500000 -1016000
+     -2500000 -2500000)
+    (connect (terminal wire) (terminal pin "SWITCH MENU TO LEFT"-0))
+   )
+   (wire (path TOP 76200  1766000 -500000 1766000 -1143000 508000 -1143000)
+    (connect (terminal pin R8-1) (terminal wire))
+   )
+   (wire (path TOP 76200  508000 -1143000 508000 -1330000 536000 -1330000)
+    (connect (terminal wire) (terminal pin U1-20))
+   )
+   (wire (path BOT 76200  -2500000 -3770000 -2500000 -2500000)
+    (connect (terminal pin "SWITCH MENU TO LEFT"-2) (terminal pin "SWITCH MENU TO LEFT"-0))
+    (attr bus)
+   )
+   )
+   (Net #00010 
+   (rule
+   )
+   (wire (path BOT 76200  512000 -2500000 512000 -2032000 790000 -2032000
+     790000 -1330000)
+    (connect (terminal pin LCD1-3) (terminal pin U1-19))
+   )
+   )
+   (Net #00013 
+   (rule
+   )
+   (wire (path BOT 76200  258000 -2500000 258000 -2794000 1552000 -2794000
+     1552000 -1330000)
+    (connect (terminal pin LCD1-2) (terminal pin U1-16))
+   )
+   )
+   (Net #00014 
+   (rule
+   )
+   (wire (path BOT 76200  2250000 -2500000 1806000 -2500000 1806000 -1330000)
+    (connect (terminal pin "SWITCH MENU TO RIGHT"-0) (terminal pin U1-15))
+   )
+   (wire (path BOT 76200  1766000 500000 1766000 63500 2032000 63500
+     2032000 -889000 1806000 -889000 1806000 -1330000)
+    (connect (terminal pin R7-1) (terminal pin U1-15))
+   )
+   (wire (path BOT 76200  2250000 -3770000 2250000 -2500000)
+    (connect (terminal pin "SWITCH MENU TO RIGHT"-2) (terminal pin "SWITCH MENU TO RIGHT"-0))
+    (attr bus)
+   )
+   )
+   (Net #00017 
+   (rule
+   )
+   (wire (path TOP 76200  -1242000 1250000 -1242000 1841500 1079500 1841500
+     1079500 2500000 1500000 2500000)
+    (connect (terminal pin U1-2) (terminal pin J1-0))
+   )
+   )
+   (Net #00018 
+   (rule
+   )
+   (wire (path BOT 76200  -988000 1250000 -988000 952500 2032000 952500
+     2032000 1654980 1754000 1654980 1754000 2500000)
+    (connect (terminal pin U1-3) (terminal pin J1-1))
+   )
+   )
+   (Net #00019 
+   (rule
+   )
+   (wire (path TOP 76200  -734000 1250000 -734000 1714500 2008000 1714500
+     2008000 2500000)
+    (connect (terminal pin U1-4) (terminal pin J1-2))
+   )
+   )
+   (Net #00020 
+   (rule
+   )
+   (wire (path TOP 76200  -480000 1250000 -480000 1587500 2262000 1587500
+     2262000 2500000)
+    (connect (terminal pin U1-5) (terminal pin J1-3))
+   )
+   )
+   (Net #00023 
+   (rule
+   )
+   (wire (path TOP 76200  282000 1250000 282000 1460500 3746000 1460500
+     3746000 2500000)
+    (connect (terminal pin U1-8) (terminal pin PIR-1))
+   )
+   )
+   (Net #00024 
+   (rule
+   )
+   (wire (path TOP 76200  536000 1250000 536000 0 -4250000 0)
+    (connect (terminal pin U1-9) (terminal pin BUZ2-0))
+   )
+   )
+   (Net #00026 
+   (rule
+   )
+   (wire (path BOT 76200  1044000 1250000 1044000 2667000 -4416910 2667000
+     -4416910 1496001 -4250000 1496001 -4250000 1496000)
+    (connect (terminal pin U1-11) (terminal pin GAS-1))
+   )
+   )
+   (Net +5V 
+   (rule
+   )
+   (wire (path TOP 101600  -4250000 -2004000 -4064000 -2004000 -4064000 -2984500
+     4000 -2984500 4000 -2500000)
+    (connect (terminal pin DHT11-2) (terminal pin LCD1-1))
+   )
+   (wire (path BOT 101600  -1230000 2500000 -1230000 2032000 -1750000 2032000
+     -1750000 1250000)
+    (connect (terminal pin VIN-5) (terminal pin U1-0))
+   )
+   (wire (path BOT 101600  -1750000 1250000 -2222500 1250000 -2222500 1206500
+     -3810000 1206500)
+    (connect (terminal pin U1-0) (terminal via))
+   )
+   (wire (path TOP 101600  -3810000 1206500 -3810000 1242000 -4250000 1242000)
+    (connect (terminal via) (terminal pin GAS-2))
+   )
+   (wire (path TOP 101600  -1230000 2500000 -1230000 2730500 4000000 2730500
+     4000000 2500000)
+    (connect (terminal pin VIN-5) (terminal pin PIR-2))
+   )
+   (wire (path TOP 101600  -1750000 -500000 -1750000 -698500 750000 -698500
+     750000 -500000)
+    (connect (terminal pin R2-0) (terminal pin R8-0))
+   )
+   (wire (path BOT 101600  -1750000 500000 -1750000 -500000)
+    (connect (terminal pin R1-0) (terminal pin R2-0))
+   )
+   (wire (path BOT 101600  750000 -500000 750000 500000)
+    (connect (terminal pin R8-0) (terminal pin R7-0))
+   )
+   (wire (path BOT 101600  -1750000 1250000 -1750000 500000)
+    (connect (terminal pin U1-0) (terminal pin R1-0))
+   )
+   (wire (path BOT 101600  -4250000 -2004000 -3810000 -2004000 -3810000 1206500)
+    (connect (terminal pin DHT11-2) (terminal via))
+   )
+   (via $VIA#0_POWER -3810000 1206500)
+   )
+   (Net GND 
+   (rule
+   )
+   (wire (path TOP 101600  -1992000 -2500000 -1992000 -2730500 -3660074 -2730500
+     -3660074 -1496000 -4250000 -1496000)
+    (connect (terminal pin "SWITCH MENU TO LEFT"-1) (terminal pin DHT11-0))
+   )
+   (wire (path TOP 101600  -1496000 1250000 -1496000 1750000 -4250000 1750000)
+    (connect (terminal pin U1-1) (terminal pin GAS-0))
+   )
+   (wire (path BOT 101600  -500000 2500000 -500000 1778000 -1496000 1778000
+     -1496000 1250000)
+    (connect (terminal pin GND-0) (terminal pin U1-1))
+   )
+   (wire (path TOP 101600  2758000 -2500000 4508000 -2500000 4508000 -2020000)
+    (connect (terminal pin "SWITCH MENU TO RIGHT"-1) (terminal pin FAN-3))
+   )
+   (wire (path BOT 101600  4508000 1750000 4508000 1968500 3492000 1968500
+     3492000 2500000)
+    (connect (terminal pin LIGHT-1) (terminal pin PIR-0))
+   )
+   (wire (path BOT 101600  -4250000 -254000 -4064000 -254000 -4064000 1750000
+     -4250000 1750000)
+    (connect (terminal pin BUZ2-1) (terminal pin GAS-0))
+   )
+   (wire (path TOP 101600  2758000 -2500000 2413000 -2500000 2413000 -2286000
+     -250000 -2286000 -250000 -2500000)
+    (connect (terminal pin "SWITCH MENU TO RIGHT"-1) (terminal pin LCD1-0))
+   )
+   (wire (path TOP 101600  -250000 -2500000 -250000 -2499999 -1333500 -2499999
+     -1333500 -2500000 -1992000 -2500000)
+    (connect (terminal pin LCD1-0) (terminal pin "SWITCH MENU TO LEFT"-1))
+   )
+   (wire (path BOT 101600  4508000 480000 4508000 1750000)
+    (connect (terminal pin LIGHT-3) (terminal pin LIGHT-1))
+   )
+   (wire (path BOT 101600  4508000 -2020000 4508000 -750000)
+    (connect (terminal pin FAN-3) (terminal pin FAN-1))
+   )
+   (wire (path BOT 101600  -4250000 -254000 -4250000 -1496000)
+    (connect (terminal pin BUZ2-1) (terminal pin DHT11-0))
+   )
+   (wire (path BOT 101600  4508000 -750000 4508000 480000)
+    (connect (terminal pin FAN-1) (terminal pin LIGHT-3))
+   )
+   (wire (path BOT 101600  2758000 -3770000 2758000 -2500000)
+    (connect (terminal pin "SWITCH MENU TO RIGHT"-3) (terminal pin "SWITCH MENU TO RIGHT"-1))
+    (attr bus)
+   )
+   (wire (path BOT 101600  -1992000 -3770000 -1992000 -2500000)
+    (connect (terminal pin "SWITCH MENU TO LEFT"-3) (terminal pin "SWITCH MENU TO LEFT"-1))
+    (attr bus)
+   )
+   )
+  )
+ )
