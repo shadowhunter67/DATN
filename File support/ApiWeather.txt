@@ -1,1 +1,0 @@
-api.openweathermap.org/data/2.5/weather?q=Ho Chi Minh City&appid=ac7fa1d3af207175821322c93cf3f494
